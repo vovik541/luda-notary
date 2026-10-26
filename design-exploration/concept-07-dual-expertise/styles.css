@@ -1,0 +1,135 @@
+/* Concept 07 — Dual Expertise. White + warm white, deep navy, soft blue, restrained gold. */
+@import url("../assets/css/round3-base.css");
+:root {
+  --ground: #ffffff;
+  --warm: #f8f6f1;
+  --soft: #eef3f9;
+  --card: #ffffff;
+  --navy: #13284a;
+  --navy-2: #0b1a33;
+  --ink: #15202f;
+  --ink-2: #4b5667;
+  --line: #dde3ec;
+  --link: #1f5799;
+  --accent: #b08c4f;
+  --accent-ink: #7f6128;
+  --lda: #4a6380;
+  --focus: #e0a72e;
+  --map-fill: #e3ebf5;
+  --head-bg: #ffffff;
+  --ph-bg: var(--warm);
+  --display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --text: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --h-weight: 600;
+  --r: 6px; --r-btn: 4px; --r-img: 4px;
+  --m: clamp(18px, 4.4vw, 64px);
+  --sec: clamp(80px, 8vw, 128px);
+  --max: 1320px;
+}
+.brand img { width: 196px; }
+
+/* hero */
+.hero { background: var(--warm); }
+.hero-grid { display: grid; grid-template-columns: 5fr 7fr; gap: clamp(32px, 6vw, 112px); align-items: center; padding-top: clamp(32px, 4vw, 64px); }
+.hero-fig { margin: 0 0 -1px; align-self: end; }
+.hero-pic img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: top; }
+.hero-copy { padding-bottom: clamp(48px, 6vw, 96px); }
+.hero-copy h1 { font-size: clamp(48px, 6.4vw, 96px); letter-spacing: -0.04em; }
+.hero-role { font: 600 clamp(19px, 1.6vw, 23px)/1.3 var(--display); color: var(--accent-ink); margin: 14px 0 22px; }
+.hero-copy .lede { color: var(--ink); max-width: 32em; margin-bottom: 32px; }
+.hero-sub { margin-top: 16px; font-size: 16px; color: var(--ink-2); }
+
+/* the two branches */
+.branches { padding-top: clamp(56px, 6vw, 96px); }
+.branch-grid { display: grid; grid-template-columns: 8fr 4fr; gap: 20px; align-items: stretch; }
+.branch { border-radius: var(--r); padding: clamp(28px, 3.6vw, 56px); display: flex; flex-direction: column; }
+.branch h3 { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 14px; }
+.branch-lede { font-size: 18px; }
+.branch-list { list-style: none; padding: 0; margin: 8px 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; }
+.branch-list li { padding-left: 18px; position: relative; }
+.branch-list li::before { content: ""; position: absolute; left: 0; top: .7em; width: 8px; height: 2px; }
+.branch-meta { margin-top: auto; padding-top: 16px; font-size: 16px; }
+.branch-act { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; margin-top: 8px; }
+.branch-notary { background: var(--navy); color: #d9e2ee; }
+.branch-notary h3 { color: #fff; }
+.branch-notary .branch-label { color: #d9be8a; }
+.branch-notary .branch-list li { color: #fff; }
+.branch-notary .branch-list a { color: #fff; }
+.branch-notary .branch-list li::before { background: var(--accent); }
+.branch-notary .branch-meta { border-top: 1px solid rgba(255,255,255,.18); color: #d9e2ee; }
+.branch-notary .branch-meta strong { color: #fff; }
+.link-light { color: #fff; font-weight: 600; }
+.branch-lda { background: var(--soft); border: 2px dashed #c8a14f; }
+.branch-lda .branch-label { color: var(--lda); }
+.branch-lda h3 { font-size: clamp(24px, 2vw, 30px); }
+.branch-lda .branch-list { grid-template-columns: 1fr; }
+.branch-lda .branch-list li::before { background: var(--lda); }
+.branch-lda .branch-meta { border-top: 1px solid var(--line); color: var(--ink-2); }
+.branch-lda .branch-act a:not(.btn) { font-weight: 600; }
+
+/* credentials */
+.cred { background: var(--warm); border-radius: var(--r); padding: 20px; }
+.cred .reg { background: #fff; }
+.cred .small { margin: 12px 0 0; }
+.cred-notary { box-shadow: inset 0 3px 0 var(--accent); }
+.cred-lda { border: 2px dashed #c8a14f; background: #fffaf0; }
+
+/* appointments */
+.ap-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.ap-grid article { background: #fff; border-radius: var(--r); padding: 24px 26px; box-shadow: inset 0 3px 0 var(--navy); }
+.ap-grid article h3 { margin-bottom: 8px; }
+.ap-grid article p { margin: 0; color: var(--ink-2); }
+.ap-grid .ap-lda { box-shadow: none; border: 2px dashed #c8a14f; }
+
+.wide-pic { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-img); }
+.tint .quotes { padding-top: 8px; }
+
+/* page heads per branch */
+.ph-notary { box-shadow: inset 0 4px 0 var(--navy); }
+.ph-lda { background: var(--soft); box-shadow: inset 0 4px 0 var(--lda); }
+.ph-lda .branch-label { color: var(--lda); }
+.big-fee { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin: 0 0 28px; color: var(--ink-2); }
+.big-fee span { font: 300 clamp(72px, 8vw, 120px)/0.9 var(--display); color: var(--navy); letter-spacing: -0.05em; }
+
+/* CTA */
+.cta { background: var(--navy); color: #d9e2ee; padding: clamp(64px, 7vw, 112px) 0; }
+.cta h2 { color: #fff; margin-bottom: 12px; }
+.cta-grid { display: grid; grid-template-columns: 6fr 6fr; gap: 32px; align-items: center; }
+.cta-act { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; justify-content: flex-end; }
+.cta-phone { font: 300 clamp(34px, 3.6vw, 54px)/1 var(--display); color: #fff; text-decoration: none; letter-spacing: -0.03em; }
+.cta-lda { background: var(--lda); }
+
+/* footer */
+.site-foot { background: var(--warm); padding: 64px 0 36px; font-size: 15px; }
+.foot-grid { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr; gap: 36px; }
+.foot-id img { width: 210px; margin-bottom: 14px; }
+.site-foot h2 { font: 650 16px var(--display); margin-bottom: 10px; }
+.site-foot ul { list-style: none; padding: 0; margin: 0 0 10px; line-height: 1.95; }
+.legal { font-size: 13px; color: var(--ink-2); margin-top: 32px; max-width: 120ch; }
+.legal + .legal { margin-top: 6px; }
+
+@media (max-width: 1040px) {
+  .hero-grid { grid-template-columns: 1fr 1fr; }
+  .branch-grid { grid-template-columns: 1fr; }
+  .ap-grid { grid-template-columns: 1fr; }
+  .foot-grid { grid-template-columns: 1fr 1fr; }
+  .cta-grid { grid-template-columns: 1fr; }
+  .cta-act { justify-content: flex-start; }
+}
+@media (max-width: 640px) {
+  .brand img { width: 150px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 0; padding-top: 24px; }
+  .hero-copy { order: -1; padding-bottom: 28px; }
+  .hero-copy h1 { font-size: 46px; }
+  .hero-role { margin: 8px 0 14px; }
+  .hero-copy .btn { width: 100%; }
+  .hero-fig { max-width: 420px; }
+  .branch-list { grid-template-columns: 1fr; }
+  .branch-act .btn { width: 100%; }
+  .foot-grid { grid-template-columns: 1fr; }
+}
+.branch-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin: 8px 0 0; background: rgba(255,255,255,.12); border-radius: var(--r); overflow: hidden; }
+.branch-facts div { background: #1b335a; padding: 14px 16px; }
+.branch-facts dt { font-size: 13px; color: #d9be8a; font-weight: 650; }
+.branch-facts dd { margin: 2px 0 0; font-size: 15px; color: #fff; }
+@media (max-width: 640px) { .branch-facts { grid-template-columns: 1fr 1fr; } }

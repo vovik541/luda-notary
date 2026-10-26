@@ -1,0 +1,21 @@
+# Build output
+dist/
+
+# Dependencies and Cloudflare local state
+node_modules/
+.wrangler/
+
+# Secrets and local configuration
+.env
+.env.*
+.dev.vars
+*.pem
+*.key
+
+# Editor and tool state
+.idea/
+.impeccable/
+.taste-skill/
+
+# Development-only design artifacts (screenshots, validation logs)
+design-exploration/screenshots/

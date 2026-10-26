@@ -1,0 +1,12 @@
+{
+  "name": "luda-notary",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:preview": "node scripts/build-preview.mjs",
+    "check:preview": "node scripts/check-preview.mjs"
+  }
+}

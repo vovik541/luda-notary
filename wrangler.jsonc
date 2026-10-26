@@ -1,0 +1,15 @@
+{
+  // Design-review previews for Liudmyla Petruk Notary. Static assets only: no Worker script,
+  // no routes or custom domains, no bindings. Served on the account's workers.dev subdomain.
+  // Build first: npm run build:preview
+  "name": "liudmyla-notary-designs",
+  "compatibility_date": "2026-08-23",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist/design-preview",
+    // /concept-01-editorial/ serves concept-01-editorial/index.html
+    "html_handling": "auto-trailing-slash",
+    // Unknown paths return dist/design-preview/404.html with status 404
+    "not_found_handling": "404-page"
+  }
+}
