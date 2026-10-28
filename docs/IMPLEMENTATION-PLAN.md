@@ -400,4 +400,4 @@ The site now deploys to **Cloudflare Pages**, not Workers with static assets. Th
 - **Rate limiting:** Pages has no Rate Limiting binding. It becomes a WAF rate-limiting rule on the custom domain's zone (README). Until then, Turnstile and the time-trap are the brakes.
 - **Static assets:** `_redirects`, `_headers` and nested `404.html` behave the same on Pages. `npm run check` passes against `wrangler pages dev` for both builds.
 - **Indexing:** production builds also send `X-Robots-Tag: noindex` on `*.pages.dev`, so only the custom domain can be indexed.
-- **Draft mode on the production branch:** the Pages production branch (`design-previews`) runs the draft build and draft runtime vars until launch.
+- **Draft mode on the production branch:** the Pages production branch (`master`) runs the draft build and draft runtime vars until launch.

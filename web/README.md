@@ -33,7 +33,7 @@ In Workers & Pages → Create → Pages → Connect to Git, choose `vovik541/lud
 
 | Setting | Value |
 |---|---|
-| Production branch | `design-previews` (until the site is merged into `master`) |
+| Production branch | `master` |
 | Framework preset | None |
 | Root directory | `web` |
 | Build command | `npm run build` |
@@ -49,7 +49,7 @@ Every other branch gets its own preview URL (`<branch>.<project>.pages.dev`).
 npx wrangler login
 ```
 
-Run `npx wrangler pages project create liudmyla-petruk-notary --production-branch design-previews` once. After that, deploy with `npm run deploy`.
+Run `npx wrangler pages project create liudmyla-petruk-notary --production-branch master` once. After that, deploy with `npm run deploy`.
 
 ### After the first deploy
 
