@@ -69,3 +69,6 @@ design-research/*
 # Local Claude Code tooling (project skills, settings)
 .claude/
 skills-lock.json
+
+# Local portable toolchain (Node 24 for the Angular 22 site)
+.tools/
