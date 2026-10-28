@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["./**/*.ts", "../src/app/shared/request-schema.ts"]
+  "include": ["./**/*.ts", "../functions/**/*.ts", "../src/app/shared/request-schema.ts"]
 }

@@ -1,9 +1,10 @@
 // Post-build for the static site (dist/site/browser), run after `ng build`.
 // Usage: node scripts/postbuild.mjs [production]   (default: preview)
 //
-// 1. Per-locale 404 pages: {locale}/404/index.html → {locale}/404.html, served by Workers with a real 404 status.
+// 1. Per-locale 404 pages: {locale}/404/index.html → {locale}/404.html, served by Pages with a real 404 status.
 // 2. _redirects: one-hop 301s from every legacy URL of www.mobilenotary-sacramento.com (plan §3).
-// 3. _headers: security and caching headers for static assets (the API Worker sets its own).
+// 3. _headers: security and caching headers for static assets (the API sets its own). Production also marks the
+//    *.pages.dev hostnames noindex, so only the custom domain can be indexed.
 // 4. robots.txt and sitemap.xml by environment; the sitemap is built from the pages' own canonical/hreflang tags,
 //    so it can only list pages that really exist, are indexable and are self-canonical.
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -73,7 +74,11 @@ writeFileSync(join(out, '_headers'), `/*
   Cache-Control: public, max-age=604800
 /brand/*
   Cache-Control: public, max-age=604800
-`);
+${env === 'production' ? `https://:project.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
+` : ''}`);
 
 // 4. robots.txt and sitemap.xml
 const pages = [];

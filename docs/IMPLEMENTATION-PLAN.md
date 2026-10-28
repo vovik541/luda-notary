@@ -390,3 +390,14 @@ The API was exercised by hand: time-trap, dry-run send, idempotent repeat, field
 - Font subsetting, responsive hero images and an OG image per locale.
 - Native review of the UK/RU copy and of the review translations (blocker B6/B7). Legal text stays a draft (B5, B6, B8).
 - Everything that depends on blockers B1–B12.
+
+### 14.x Hosting change: Cloudflare Pages (2026-10-28)
+
+The site now deploys to **Cloudflare Pages**, not Workers with static assets. This supersedes the Worker details in §2 and §6:
+
+- **API:** `/api/*` runs as Pages Functions (`web/functions/api/[[path]].ts`, logic in `web/api/handler.ts`). Pages invokes Functions only for those routes.
+- **Idempotency:** Pages cannot host a Durable Object, so the Durable Object was removed. Durable idempotency now comes from Resend's `Idempotency-Key` (24 h): the same key with the same email returns the original result and sends nothing again, and a concurrent duplicate gets 409, which the client retries.
+- **Rate limiting:** Pages has no Rate Limiting binding. It becomes a WAF rate-limiting rule on the custom domain's zone (README). Until then, Turnstile and the time-trap are the brakes.
+- **Static assets:** `_redirects`, `_headers` and nested `404.html` behave the same on Pages. `npm run check` passes against `wrangler pages dev` for both builds.
+- **Indexing:** production builds also send `X-Robots-Tag: noindex` on `*.pages.dev`, so only the custom domain can be indexed.
+- **Draft mode on the production branch:** the Pages production branch (`design-previews`) runs the draft build and draft runtime vars until launch.

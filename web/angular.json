@@ -32,7 +32,7 @@
             "define": {
               "LDA_PUBLISHED": "true",
               "SITE_ENV": "\"preview\"",
-              "SITE_URL": "\"https://liudmyla-petruk-notary.workers.dev\"",
+              "SITE_URL": "\"https://liudmyla-petruk-notary.pages.dev\"",
               "TURNSTILE_SITE_KEY": "\"\""
             }
           },
@@ -65,7 +65,7 @@
               "define": {
                 "LDA_PUBLISHED": "true",
                 "SITE_ENV": "\"preview\"",
-                "SITE_URL": "\"https://liudmyla-petruk-notary.workers.dev\"",
+                "SITE_URL": "\"https://liudmyla-petruk-notary.pages.dev\"",
                 "TURNSTILE_SITE_KEY": "\"\""
               }
             },
@@ -73,7 +73,7 @@
               "define": {
                 "LDA_PUBLISHED": "true",
                 "SITE_ENV": "\"preview\"",
-                "SITE_URL": "\"https://liudmyla-petruk-notary.workers.dev\"",
+                "SITE_URL": "\"https://liudmyla-petruk-notary.pages.dev\"",
                 "TURNSTILE_SITE_KEY": "\"\""
               }
             }

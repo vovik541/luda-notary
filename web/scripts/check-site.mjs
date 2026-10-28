@@ -1,4 +1,4 @@
-// Site checks against a running Worker (npx wrangler dev). No dependencies; Chrome over CDP for the browser part.
+// Site checks against the running site (npm run dev:pages). No dependencies; Chrome over CDP for the browser part.
 // Usage: node scripts/check-site.mjs [baseUrl=http://127.0.0.1:8790]
 //
 // HTTP (plan §7): every legacy URL → one 301 → 200; every built page → 200 with a self-referencing canonical and a
@@ -134,7 +134,9 @@ const SIG_CHECK = `(async () => {
     const nib = svg.querySelector('circle'); const r = nib.getBoundingClientRect();
     if (!reduce && d > 0.02 && d < 0.98 && (r.top < innerHeight * 0.4 || r.top > innerHeight * 1.0)) { tipOk = false; tips.push(Math.round(r.top / innerHeight * 100) + '%@' + y); }
   }
-  scrollTo(0, document.body.scrollHeight); await sleep(200); seq.push(+drawn().toFixed(3));
+  // Islands near the footer hydrate on viewport and can grow the page, so scroll to the end until the height settles.
+  for (let i = 0, h = -1; i < 6 && h !== document.documentElement.scrollHeight; i++) { h = document.documentElement.scrollHeight; scrollTo(0, h); await sleep(250); }
+  seq.push(+drawn().toFixed(3));
   const monotonic = seq.every((v, i) => !i || v >= seq[i - 1] - 0.001);
   return { tips: tips.slice(0, 6), hits: [...new Set(hits)].slice(0, 4), hitCount: hits.length, first: seq[0], last: seq[seq.length - 1], monotonic, tipOk, reduce };
 })()`;

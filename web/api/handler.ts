@@ -1,20 +1,18 @@
-// API Worker for /api/* (static pages are served from assets; see wrangler.jsonc run_worker_first).
-// This is not Angular SSR: a small fetch handler for the appointment and LDA request forms.
+// /api/* handler, mounted by Cloudflare Pages Functions (functions/api/[[path]].ts). Static pages never reach it:
+// Pages only invokes Functions for /api/* (the generated _routes.json). Not Angular SSR: just the request forms.
 //
 // POST /api/request          JSON (fetch) or form-encoded (no-JS) → validate → anti-abuse → idempotent send via Resend
 // GET  /api/request/token    signed time-trap token for the form
 //
-// Anti-abuse, in order (plan §6): origin + size checks, Workers Rate Limiting binding (per location, a brake not a
-// global counter), honeypot, signed time-trap, server-side Turnstile verification, shared-schema validation.
-// Idempotency is durable: a Durable Object per request key serialises duplicates; Worker memory is never relied on.
-// Without Resend secrets the Worker runs in dry-run mode: it validates and records, but sends nothing.
-import { DurableObject } from 'cloudflare:workers';
+// Anti-abuse, in order (plan §6): origin + size checks, honeypot, signed time-trap, server-side Turnstile
+// verification, shared-schema validation. Rate limiting is a Cloudflare WAF rule on the zone (README), because
+// Pages Functions have no Rate Limiting binding.
+// Idempotency is durable and needs no storage of ours: the form's key is sent to Resend as Idempotency-Key, and
+// Resend keeps it for 24 h (same key + same email → original result, no second send; still running → 409).
+// Function memory is never relied on. Without Resend secrets the API runs in dry-run mode: it validates, sends nothing.
 import { type RequestInput, todayInCalifornia, validateRequest } from '../src/app/shared/request-schema';
 
 export interface Env {
-  ASSETS: Fetcher;
-  BOOKING_STORE: DurableObjectNamespace<BookingStore>;
-  BOOKING_LIMIT?: RateLimit;
   SITE_ENV: 'preview' | 'production';
   LDA_PUBLISHED: string;
   RESEND_API_KEY?: string;
@@ -38,20 +36,17 @@ const SECURITY_HEADERS = {
 const json = (status: number, body: object, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', ...SECURITY_HEADERS, ...extra } });
 
-export default {
-  async fetch(request, env, ctx): Promise<Response> {
-    const url = new URL(request.url);
-    if (url.pathname === '/api/request/token' && request.method === 'GET') return json(200, { t: await signToken(env, Date.now()) });
-    if (url.pathname === '/api/request') {
-      if (request.method !== 'POST') return json(405, { error: 'method' }, { allow: 'POST' });
-      return handleRequest(request, env, ctx);
-    }
-    if (url.pathname.startsWith('/api/')) return json(404, { error: 'not_found' });
-    return env.ASSETS.fetch(request);
-  },
-} satisfies ExportedHandler<Env>;
+export async function handleApi(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  if (url.pathname === '/api/request/token' && request.method === 'GET') return json(200, { t: await signToken(env, Date.now()) });
+  if (url.pathname === '/api/request' || url.pathname === '/api/request/') {
+    if (request.method !== 'POST') return json(405, { error: 'method' }, { allow: 'POST' });
+    return handleRequest(request, env);
+  }
+  return json(404, { error: 'not_found' });
+}
 
-async function handleRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const type = request.headers.get('content-type') ?? '';
   const isForm = type.startsWith('application/x-www-form-urlencoded') || type.startsWith('multipart/form-data');
@@ -67,12 +62,8 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
   if (!raw) return json(400, { error: 'body' });
   locale = ['en', 'uk', 'ru'].includes(String(raw['locale'])) ? String(raw['locale']) : 'en';
 
-  // 2. Rate limit (per Cloudflare location; cheap first brake)
+  // 2. Rate limit: a WAF rule in front of /api/request answers 429 before this code runs (README).
   const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
-  if (env.BOOKING_LIMIT) {
-    const { success } = await env.BOOKING_LIMIT.limit({ key: `request:${ip}` });
-    if (!success) return isForm ? done(false, 429, {}) : json(429, { error: 'rate' }, { 'retry-after': '60' });
-  }
 
   // 3. Honeypot: pretend success, send nothing
   if (typeof raw['company'] === 'string' && raw['company'].trim()) return done(true, 200, { ok: true });
@@ -104,25 +95,18 @@ async function handleRequest(request: Request, env: Env, ctx: ExecutionContext):
   if (value.service === 'lda' && env.LDA_PUBLISHED !== 'true') return done(false, 404, { error: 'not_available' });
   if (Object.keys(errors).length) return isForm ? done(false, 400, {}) : json(400, { error: 'invalid', fields: errors });
 
-  // 7. Durable idempotency, then send
-  const stub = env.BOOKING_STORE.get(env.BOOKING_STORE.idFromName(key));
-  const begin = await stub.begin();
-  if (begin.state === 'sent') return done(true, 200, { ok: true, id: begin.id, dryRun: begin.dryRun });
-  if (begin.state === 'processing') return json(409, { error: 'in_progress' });
-
+  // 7. Send; Resend's Idempotency-Key makes a double-click or a retry after a timeout safe
   const dryRun = !(env.RESEND_API_KEY && env.RESEND_FROM_EMAIL && env.RESEND_TO_EMAIL);
   if (dryRun && production) {
-    await stub.finish({ ok: false });
     console.error('config: Resend secrets missing in production');
     return done(false, 500, { error: 'config' });
   }
   try {
     const id = dryRun ? `dry-${key.slice(0, 8)}` : await sendEmail(env, value, key, isForm);
-    ctx.waitUntil(stub.finish({ ok: true, id, dryRun }));
+    if (id === IN_PROGRESS) return isForm ? done(true, 200, {}) : json(409, { error: 'in_progress' });
     console.log(JSON.stringify({ event: 'request', service: value.service, dryRun, id })); // no personal data in logs
     return done(true, 200, { ok: true, id, dryRun });
   } catch (e) {
-    await stub.finish({ ok: false });
     console.error(JSON.stringify({ event: 'send_failed', service: value.service, error: String((e as Error).message).slice(0, 200) }));
     return done(false, 502, { error: 'send_failed' });
   }
@@ -203,6 +187,12 @@ ${unverified ? '<p style="color:#8c3524">Sent without JavaScript: anti-spam chec
   return { subject, text, html };
 }
 
+const IN_PROGRESS = 'in_progress';
+
+/**
+ * Returns Resend's email id, or IN_PROGRESS while a first attempt with the same key is still running.
+ * A key reused with a different email (invalid_idempotent_request) throws: the client then shows the call/text fallbacks.
+ */
 async function sendEmail(env: Env, v: RequestInput, key: string, unverified: boolean): Promise<string> {
   const { subject, text, html } = buildEmail(v, unverified);
   const res = await fetch('https://api.resend.com/emails', {
@@ -210,33 +200,8 @@ async function sendEmail(env: Env, v: RequestInput, key: string, unverified: boo
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json', 'idempotency-key': key },
     body: JSON.stringify({ from: env.RESEND_FROM_EMAIL, to: [env.RESEND_TO_EMAIL], reply_to: v.email || undefined, subject, text, html }),
   });
-  const data = (await res.json().catch(() => ({}))) as { id?: string; message?: string };
+  const data = (await res.json().catch(() => ({}))) as { id?: string; message?: string; name?: string };
+  if (res.status === 409 && data.name === 'concurrent_idempotent_requests') return IN_PROGRESS;
   if (!res.ok || !data.id) throw new Error(`resend ${res.status}: ${data.message ?? 'no id'}`);
   return data.id;
-}
-
-// ---------- Durable idempotency ----------
-type Stored = { state: 'processing' | 'sent' | 'failed'; at: number; id?: string; dryRun?: boolean };
-
-/**
- * One instance per request key (idFromName). Requests for the same key are serialised by the object, so a
- * double-click or a retry after a timeout never sends twice. Holds no personal data; deletes itself after 24 h.
- */
-export class BookingStore extends DurableObject<Env> {
-  async begin(): Promise<{ state: 'new' | 'processing' | 'sent'; id?: string; dryRun?: boolean }> {
-    const cur = await this.ctx.storage.get<Stored>('s');
-    if (cur?.state === 'sent') return { state: 'sent', id: cur.id, dryRun: cur.dryRun };
-    if (cur?.state === 'processing' && Date.now() - cur.at < 60_000) return { state: 'processing' };
-    await this.ctx.storage.put<Stored>('s', { state: 'processing', at: Date.now() });
-    if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(Date.now() + 24 * 60 * 60 * 1000);
-    return { state: 'new' };
-  }
-
-  async finish(r: { ok: boolean; id?: string; dryRun?: boolean }) {
-    await this.ctx.storage.put<Stored>('s', r.ok ? { state: 'sent', at: Date.now(), id: r.id, dryRun: r.dryRun } : { state: 'failed', at: Date.now() });
-  }
-
-  async alarm() {
-    await this.ctx.storage.deleteAll();
-  }
 }

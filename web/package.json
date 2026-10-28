@@ -7,8 +7,10 @@
     "build": "ng build --configuration production,preview && node scripts/postbuild.mjs",
     "build:production": "ng build --configuration production && node scripts/postbuild.mjs production",
     "test": "ng test",
-    "dev:worker": "wrangler dev",
-    "check": "node scripts/check-site.mjs"
+    "check": "node scripts/check-site.mjs",
+    "dev:pages": "wrangler pages dev --port 8790",
+    "typecheck:api": "tsc -p api/tsconfig.json",
+    "deploy": "npm run build && wrangler pages deploy"
   },
   "private": true,
   "packageManager": "npm@11.17.0",
