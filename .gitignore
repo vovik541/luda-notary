@@ -19,3 +19,49 @@ node_modules/
 
 # Development-only design artifacts (screenshots, validation logs)
 design-exploration/screenshots/
+
+# Earlier design rounds and experiments: kept locally, not part of the final design.
+# The final design is design-exploration/experiment-a3-complete (approved A2 page + reviews, FAQ chat, booking).
+design-exploration/concept-0*/
+design-exploration/experiment-*/
+!design-exploration/experiment-a3-complete/
+!design-exploration/experiment-a-portrait/
+design-exploration/experiment-a-portrait/*
+!design-exploration/experiment-a-portrait/styles.css
+design-exploration/index.html
+design-exploration/brand-assets.html
+design-exploration/REPORT*.md
+preview/index.html
+preview/thumbs/
+
+# Generators and checks of earlier rounds (the final design keeps only its own chain)
+design-exploration/_build/*
+!design-exploration/_build/exp.mjs
+!design-exploration/_build/content.mjs
+!design-exploration/_build/shared.mjs
+!design-exploration/_build/a2.css
+!design-exploration/_build/a3.mjs
+!design-exploration/_build/a3.css
+!design-exploration/_build/reviews.mjs
+!design-exploration/_build/sig-glyphs.mjs
+!design-exploration/_build/validate4c.mjs
+
+# Assets used only by earlier rounds, and source photos
+design-exploration/assets/css/
+design-exploration/assets/js/proto.js
+design-exploration/assets/js/proto2.js
+design-exploration/assets/js/proto3.js
+design-exploration/assets/images/liudmyla-portrait-*
+design-exploration/assets/images/liudmyla-office-tall.webp
+design-exploration/assets/images/liudmyla-cutout-bust.webp
+design-exploration/assets/images/region-*
+design-exploration/assets/region-originals/
+design-exploration/assets/credits.json
+Elegant Businesswoman at Laptop.png
+
+# Design research notes (the decision record is design-research/EXPERIMENTS.md)
+design-research/*
+!design-research/EXPERIMENTS.md
+
+# Local preview server config
+.claude/launch.json

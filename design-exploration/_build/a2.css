@@ -1,0 +1,22 @@
+/* ===== A2 overrides: calm type scale below the fold + scroll-drawn signature line ===== */
+
+/* No oversized numbers, names or statements after the first two screens */
+.ways h2 { font-size: clamp(32px, 3.6vw, 52px); }
+.ledger dd { font-size: 20px; }
+.fees-grid { grid-template-columns: 4fr 8fr; }
+.about-lead { font-size: clamp(22px, 2vw, 28px); line-height: 1.4; }
+.contact h2 { font-size: clamp(36px, 3.8vw, 56px); }
+.phone { font-size: clamp(28px, 2.6vw, 38px); }
+.foot-name { font: 500 26px/1.2 var(--serif); letter-spacing: -.01em; margin-bottom: 16px; }
+.foot-name span { display: block; font: 500 14px var(--sans); color: var(--muted); margin-top: 4px; }
+
+/* Signature line: one fine stroke, drawn by scroll, kept in the margins and section gaps */
+main.has-sig { position: relative; }
+.sigline { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: visible; }
+.sig-path { fill: none; stroke: var(--gold); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+.sig-nib { fill: var(--gold); opacity: 0; transition: opacity .3s; }
+.sigline.is-drawing .sig-nib { opacity: 1; }
+.contact .sig-on-dark { stroke: #e2c896; }
+
+@media (max-width: 1100px) { .fees-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .sig-path { stroke-width: 1.2; opacity: .7; } }

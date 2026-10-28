@@ -7,10 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'dist', 'design-preview');
-const CONCEPTS = [
-  'concept-01-editorial', 'concept-02-modern', 'concept-03-warm', 'concept-04-modern-premium',
-  'concept-05-clarity-first', 'concept-06-contemporary-editorial', 'concept-07-dual-expertise', 'concept-08-service-first',
-];
+const PAGES = ['index.html', 'reviews.html'];
 const problems = [];
 const ok = (msg) => console.log(`  ok  ${msg}`);
 const bad = (msg) => problems.push(msg);
@@ -22,12 +19,12 @@ const rel = (f) => relative(out, f).replaceAll('\\', '/');
 const html = files.filter((f) => f.endsWith('.html'));
 const text = files.filter((f) => /\.(html|css|js|txt)$/.test(f) || f.endsWith('_headers'));
 
-// Concepts and gallery
-for (const c of CONCEPTS) if (!existsSync(join(out, c, 'index.html'))) bad(`missing concept ${c}`);
-const gallery = readFileSync(join(out, 'index.html'), 'utf8');
-for (const c of CONCEPTS) if (!gallery.includes(`href="${c}/"`)) bad(`gallery does not link ${c}`);
-if (!gallery.includes('Design previews only — not the official website.')) bad('gallery preview notice missing');
-ok(`${CONCEPTS.length} concepts present and linked from the gallery`);
+// The final design: home and reviews pages, linked to each other
+for (const p of PAGES) if (!existsSync(join(out, p))) bad(`missing ${p}`);
+const home = readFileSync(join(out, 'index.html'), 'utf8');
+if (!home.includes('href="reviews.html"')) bad('home does not link the reviews page');
+if (/concept-0|experiment-|\.\.\//.test(home)) bad('home still points at earlier design rounds or parent folders');
+ok(`${PAGES.length} pages present, home links the reviews page`);
 
 // Sensitive or development files
 const forbidden = /(\.env|\.dev\.vars|\.md$|\.py$|\.mjs$|\.json$|\.pem$|\.key$|\.map$|Branding Board|qr-code|portrait-original|region-originals|screenshots|_build|validation)/i;
@@ -74,9 +71,9 @@ ok('robots.txt Disallow: /, X-Robots-Tag header, no sitemap');
 
 // Preview status and LDA draft markers
 let ldaPages = 0;
-for (const f of html.filter((x) => /concept-0/.test(x))) {
+for (const f of html.filter((x) => !x.endsWith('404.html'))) {
   const t = readFileSync(f, 'utf8');
-  if (!/Design prototype/.test(t)) bad(`preview bar missing in ${rel(f)}`);
+  if (!/Design experiment · not for publication/.test(t)) bad(`preview bar missing in ${rel(f)}`);
   if (t.includes('2026-004')) {
     ldaPages++;
     if (!/Internal draft|not yet verified|Owner-provided|owner-provided|not for publication/.test(t)) bad(`LDA number without draft notice in ${rel(f)}`);
@@ -86,7 +83,7 @@ for (const f of html.filter((x) => /(lda|document-assistance)[^/]*\.html$/.test(
   const t = readFileSync(f, 'utf8');
   if (!/not for publication/i.test(t)) bad(`LDA page lacks prominent internal-draft notice: ${rel(f)}`);
 }
-ok(`preview bar on every concept page; ${ldaPages} pages mention the LDA number, all with draft notices`);
+ok(`preview bar on every page; ${ldaPages} pages mention the LDA number, all with draft notices`);
 
 // Serve locally like Workers static assets (directory index + 404 page)
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.txt': 'text/plain' };
@@ -98,14 +95,14 @@ const server = createServer((req, res) => {
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
-const expect = [['/', 200], ['/robots.txt', 200], ['/assets/js/proto3.js', 200], ['/not-a-page/', 404],
-  ...CONCEPTS.map((c) => [`/${c}/`, 200]), ['/concept-07-dual-expertise/notary-pricing.html', 200], ['/concept-08-service-first/contact.html?type=lda', 200]];
+const expect = [['/', 200], ['/reviews.html', 200], ['/styles.css', 200], ['/robots.txt', 200], ['/assets/js/proto4.js', 200],
+  ['/assets/js/sig-glyphs.js', 200], ['/assets/images/liudmyla-cutout-desk.webp', 200], ['/not-a-page/', 404]];
 for (const [path, status] of expect) {
   const r = await fetch(base + path);
   if (r.status !== status) bad(`local server ${path} → ${r.status}, expected ${status}`);
 }
 server.close();
-ok(`served locally: ${expect.length} requests returned the expected status (directory URLs, inner pages, assets, 404)`);
+ok(`served locally: ${expect.length} requests returned the expected status (home, reviews page, assets, 404)`);
 
 if (problems.length) { console.error(`\n${problems.length} problem(s):\n- ${problems.join('\n- ')}`); process.exit(1); }
 console.log('\ncheck:preview passed');
