@@ -65,3 +65,7 @@ design-research/*
 
 # Local preview server config
 .claude/launch.json
+
+# Local Claude Code tooling (project skills, settings)
+.claude/
+skills-lock.json
